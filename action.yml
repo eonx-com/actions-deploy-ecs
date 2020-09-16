@@ -1,0 +1,22 @@
+name: 'eonx-com/actions-deploy-ecs'
+description: 'Deploy ECS Container'
+author: 'Damian Sloane <damian.sloane@eonx.com>'
+
+branding:
+  icon: 'x'
+  color: 'red'
+
+inputs:
+  environment:
+    description: 'Deployment environment (e.g. dev)'
+    required: true
+  image_tag:
+    description: 'ECR image tag'
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.environment }}
+    - ${{ inputs.image_tag }}
