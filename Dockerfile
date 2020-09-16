@@ -2,11 +2,14 @@ FROM python:3.8-buster
 
 ARG DEBIAN_FRONTEND=non-interactive
 RUN apt update; \
-    apt -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common --no-install-recommends; \
+    apt -y install apt-transport-https ca-certificates curl unzip gnupg2 software-properties-common --no-install-recommends; \
     curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -; \
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"; \
     apt update; \
     apt -y install docker-ce docker-ce-cli containerd.io --no-install-recommends; \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
+    unzip awscliv2.zip; \
+    sudo ./aws/install; \
     curl -s https://api.github.com/repos/docker/compose/releases/latest \
       | grep browser_download_url \
       | grep docker-compose-Linux-x86_64 \
