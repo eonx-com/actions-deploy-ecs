@@ -12,6 +12,8 @@ fi
 
 export ENVIRONMENT=${1}
 export IMAGE_TAG=${2}
+
+# Disable Python buffering so that output appears in GitHub Action during execution (otherwise it sits silent until the very end when it dumps the entire log)
 export PYTHONUNBUFFERED=TRUE
 
 cd /opt/deploy
