@@ -133,7 +133,7 @@ class Client(BaseClient):
             }
         )
 
-    def wait_services_stable(self, cluster_name: str, services: List[str], delay=20, max_attempts=9) -> Any:
+    def wait_services_stable(self, cluster_name: str, services: List[str], delay=20, max_attempts=18) -> Any:
         """
         Wait for the listed services to stabilize
         :param cluster_name: The ECS cluster name
