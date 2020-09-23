@@ -8,11 +8,12 @@ from typing import Tuple
 # noinspection DuplicatedCode
 class DockerCompose:
     @staticmethod
-    def create_build_file(context: str, container_id: str, dockerfile: str, image: str, version: str = '3.7') -> str:
+    def create_build_file(context: str, container_id: str, environment_id: str, dockerfile: str, image: str, version: str = '3.7') -> str:
         """
         Create a docker-compose YML file
         :param context: The image context
         :param container_id: The ID of the docker container (e.g. 'api')
+        :param environment_id: The AWS environment ID
         :param dockerfile: The dockerfile location
         :param image: The ECR image URL
         :param version: The docker-compose version (defaults to 3.7)
@@ -26,8 +27,15 @@ class DockerCompose:
                     'build': {
                         'context': context,
                         'dockerfile': dockerfile
+                        'args': {
+                            'DOCKER_CONTAINER_PATH': 'aws',
+                        }
                     },
-                    'image': image
+                    'image': image,
+                    'environment': {
+                        'AWS_ECS_TASK_NAME': container_id,
+                        'AWS_ENVIRONMENT': environment_id
+                    }
                 }
             }
         }

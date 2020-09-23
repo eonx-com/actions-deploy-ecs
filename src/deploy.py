@@ -76,6 +76,7 @@ try:
         build_files[container_id] = DockerCompose.create_build_file(
             context=GitHub.get_repository_root(),
             container_id=container_id,
+            environment_id=environment_id,
             dockerfile=deployment_configuration.get_container_filename(environment_id, container_id),
             image='{repository_url}/{container_id}:{github_sha}'.format(
                 repository_url=repository_url,
