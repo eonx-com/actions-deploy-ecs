@@ -26,7 +26,7 @@ class DockerCompose:
                 container_id: {
                     'build': {
                         'context': context,
-                        'dockerfile': dockerfile
+                        'dockerfile': dockerfile,
                         'args': {
                             'DOCKER_CONTAINER_PATH': 'aws',
                         }
