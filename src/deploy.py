@@ -195,6 +195,7 @@ try:
                         cluster_name=ecs_cluster_name,
                         services=[ecs_service_name]
                     )
+                    print('Service stabilized')
 
             # Regardless of whether the image has changed, always run the task if requested
             if deployment_configuration.is_container_run_required(environment_id=environment_id, container_id=container_id):
@@ -272,8 +273,9 @@ try:
                 else:
                     raise Exception('Failed to start task')
 
+            print('--------------------------------------------------------------------------------------------------')
+
         # Update the SSM parameters used by Terraform with latest deployed tags
-        print('--------------------------------------------------------------------------------------------------')
         print('Updating Terraform SSM Image Tags')
         print('--------------------------------------------------------------------------------------------------')
         for container_id in deployment_containers:
