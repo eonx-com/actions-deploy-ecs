@@ -146,7 +146,7 @@ try:
         if ecs_service_name not in task_definition_arns.keys():
             raise Exception('No active task definition found for service ({ecs_service_name}). Please contact the DevOps team to resolve this issue.'.format(ecs_service_name=ecs_service_name))
 
-        ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(task_definition_arns[ecs_service_name]['taskDefinition'])
+        ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(task_definition_arns[ecs_service_name])
 
         print("\n\n\n")
         print(ecs_task_definitions[ecs_service_name])
