@@ -29,6 +29,7 @@ class DockerCompose:
                         'dockerfile': dockerfile,
                         'args': {
                             'DOCKER_CONTAINER_PATH': 'aws',
+                            'AWS_ENVIRONMENT_OVERRIDE': environment_id
                         }
                     },
                     'image': image,
@@ -39,6 +40,7 @@ class DockerCompose:
                 }
             }
         }
+
         docker_compose_yml = str.encode(yaml.dump(docker_compose, sort_keys=False))
 
         # Create temporary docker-compose YML file
