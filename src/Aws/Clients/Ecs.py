@@ -51,6 +51,51 @@ class Client(BaseClient):
         )
         return describe_task_definition_result['taskDefinition']
 
+    def list_task_definitions_by_service_name(self) -> Dict[str]:
+        """
+        Return a list of task definitions indexed by the service name
+        :return: Dictionary of task definition ARNs indexed by service name
+        """
+        task_definition_arns = self.list_task_definitions()
+
+        task_definitions = {}
+
+        for task_definition_arn in task_definition_arns:
+            slash_split = str(task_definition_arn).split('/')
+            colon_split = str(slash_split[1]).split(':')
+            service_name = colon_split[0]
+            task_definitions[service_name] = task_definition_arn
+
+        return task_definitions
+
+    def list_task_definitions(self) -> List[str]:
+        """
+        Return a list of task definitions
+        :return: List of task definition ARNs
+        """
+        list_task_definition_result = self.get_client().list_task_definitions(
+            status='ACTIVE',
+            sort='DESC'
+        )
+
+        task_definition_arns = []
+
+        while True:
+            task_definition_arns.extend(list_task_definition_result['taskDefinitionArns'])
+
+            # If there are no more results, get out of here
+            if 'nextToken' not in list_task_definition_result:
+                break
+
+            # Load next page of results
+            list_task_definition_result = self.get_client().list_task_definitions(
+                status='ACTIVE',
+                sort='DESC',
+                nextToken=list_task_definition_result['nextToken']
+            )
+
+        return task_definition_arns
+
     def run_task_from_service(self, cluster_name: str, service_name: str, count: int = 1) -> List[str]:
         """
         Run an ECS task from a service definition

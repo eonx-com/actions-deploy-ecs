@@ -132,14 +132,24 @@ try:
     ecs_task_definition_rollbacks_required = []
     ssm_image_rollbacks_required = []
 
+    task_definition_arns = ecs_client.list_task_definitions_by_service_name()
+
     # Validate the all required ECS services were found and retrieve the deployed task definition for each service
     ecs_services = ecs_client.get_services_by_name(cluster=ecs_cluster_name)
     for container_id in deployment_containers:
         ecs_service_name = to_camel_case(container_id)
         if ecs_service_name not in ecs_services.keys():
             raise Exception('Could not locate required ECS service ({ecs_service_name})'.format(ecs_service_name=ecs_service_name))
-        # Store the existing task definition
-        ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(ecs_services[ecs_service_name]['taskDefinition'])
+
+        # If there is no active task definition, raise an exception
+        if ecs_service_name not in task_definition_arns.keys():
+            raise Exception('No active task definition found for service ({ecs_service_name}). Please contact the DevOps team to resolve this issue.'.format(ecs_service_name=ecs_service_name))
+
+        ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(task_definition_arns[ecs_service_name])
+
+        # If there is no active task definition for this service, raise an exception error- stuffs not right
+        if found is False:
+
         print("\n\n\n")
         print(ecs_client.get_task_definition(ecs_services[ecs_service_name]['taskDefinition']))
         print("\n\n\n")
