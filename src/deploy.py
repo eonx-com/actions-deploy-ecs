@@ -183,7 +183,7 @@ try:
                     cluster_name=ecs_cluster_name,
                     service_name=ecs_service_name,
                     container_name=ecs_service_name,
-                    task_definition_arn=ecs_task_definitions[ecs_service_name],
+                    task_definition_arn=ecs_task_definitions[ecs_service_name]['taskDefinitionArn'],
                     image=new_image
                 )
 

@@ -51,7 +51,7 @@ class Client(BaseClient):
         )
         return describe_task_definition_result['taskDefinition']
 
-    def list_task_definitions_by_service_name(self) -> Dict:
+    def list_task_definitions_by_service_name(self) -> Dict[str, str]:
         """
         Return a list of task definitions indexed by the service name
         :return: Dictionary of task definition ARNs indexed by service name
