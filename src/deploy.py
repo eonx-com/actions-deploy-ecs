@@ -140,6 +140,9 @@ try:
             raise Exception('Could not locate required ECS service ({ecs_service_name})'.format(ecs_service_name=ecs_service_name))
         # Store the existing task definition
         ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(ecs_services[ecs_service_name]['taskDefinition'])
+        print("\n\n\n")
+        print(ecs_client.get_task_definition(ecs_services[ecs_service_name]['taskDefinition']))
+        print("\n\n\n")
 
     try:
         for container_id in deployment_containers:
