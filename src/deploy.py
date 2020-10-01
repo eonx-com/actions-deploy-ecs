@@ -145,9 +145,8 @@ try:
         # If there is no active task definition, raise an exception
         if ecs_service_name not in task_definition_arns.keys():
             raise Exception('No active task definition found for service ({ecs_service_name}). Please contact the DevOps team to resolve this issue.'.format(ecs_service_name=ecs_service_name))
-        print('Loading existing task definition...')
+        print('Loading existing task definition: {task_definition_arn}'.format(task_definition_arn=task_definition_arns[ecs_service_name]))
         ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(task_definition_arns[ecs_service_name])
-        print(ecs_task_definitions[ecs_service_name])
 
     try:
         for container_id in deployment_containers:
@@ -159,7 +158,7 @@ try:
             for container_definition in ecs_task_definitions[ecs_service_name]['containerDefinitions']:
                 if container_definition['name'] == ecs_service_name:
                     original_image = container_definition['image']
-                    print('Original image: {original_image}'.format(original_image=original_image))
+                    print('Original container image: {original_image}'.format(original_image=original_image))
 
             # If there is no existing image do not proceed
             if original_image is None:
@@ -171,11 +170,11 @@ try:
                 container_id=container_id.replace("_", "-"),
                 github_sha=github_sha
             )
-            print('New image: {new_image}'.format(new_image=new_image))
+            print('New container image: {new_image}'.format(new_image=new_image))
 
             # If the new and old images are the same, skip this update- nothing has changed
             if original_image == new_image:
-                print('Updating: {ecs_service_name} (Skipped- Image Has Not Changed)'.format(ecs_service_name=ecs_service_name))
+                print('Updating: {ecs_service_name} (Skipped- Container image has not changed)'.format(ecs_service_name=ecs_service_name))
             else:
                 print('Updating: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
                 ecs_service_rollbacks_required.append(ecs_service_name)
@@ -281,9 +280,8 @@ try:
             ecs_service_name = to_camel_case(container_id)
             path = '/Terraform/ECS/Tag/{ecs_service_name}'.format(ecs_service_name=ecs_service_name)
             original_value = ssm_client.get_parameter(path=path)
-            print('Updating: {path} ({original_value} => {github_sha})'.format(
+            print('Updating SSM Image Tag: {path} ({github_sha})'.format(
                 path=path,
-                original_value=original_value,
                 github_sha=github_sha
             ))
             ssm_image_rollbacks_required.append({
