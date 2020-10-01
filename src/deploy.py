@@ -145,12 +145,9 @@ try:
         # If there is no active task definition, raise an exception
         if ecs_service_name not in task_definition_arns.keys():
             raise Exception('No active task definition found for service ({ecs_service_name}). Please contact the DevOps team to resolve this issue.'.format(ecs_service_name=ecs_service_name))
-
+        print('Loading existing task definition...')
         ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(task_definition_arns[ecs_service_name])
-
-        print("\n\n\n")
         print(ecs_task_definitions[ecs_service_name])
-        print("\n\n\n")
 
     try:
         for container_id in deployment_containers:
@@ -162,6 +159,7 @@ try:
             for container_definition in ecs_task_definitions[ecs_service_name]['containerDefinitions']:
                 if container_definition['name'] == ecs_service_name:
                     original_image = container_definition['image']
+                    print('Original image: {original_image}'.format(original_image=original_image))
 
             # If there is no existing image do not proceed
             if original_image is None:
@@ -173,6 +171,7 @@ try:
                 container_id=container_id.replace("_", "-"),
                 github_sha=github_sha
             )
+            print('New image: {new_image}'.format(new_image=new_image))
 
             # If the new and old images are the same, skip this update- nothing has changed
             if original_image == new_image:
@@ -184,6 +183,7 @@ try:
                     cluster_name=ecs_cluster_name,
                     service_name=ecs_service_name,
                     container_name=ecs_service_name,
+                    task_definition_arn=ecs_task_definitions[ecs_service_name],
                     image=new_image
                 )
 

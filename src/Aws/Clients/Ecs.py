@@ -39,7 +39,7 @@ class Client(BaseClient):
         """
         return self.__get_services__(cluster_name=cluster, index='serviceArn')
 
-    def get_task_definition(self, arn: str) -> Dict:
+    def get_task_definition(self, arn: str) -> Dict[str, str]:
         """
         Retrieve task definition by its ARN
         :param arn: The ARN of the task definition to retrieve
@@ -280,6 +280,7 @@ class Client(BaseClient):
             service_name: str,
             container_name: str,
             image: str,
+            task_definition_arn: str,
             entrypoint: Optional[Dict] = None,
             command: Optional[Dict] = None
     ) -> str:
@@ -290,6 +291,7 @@ class Client(BaseClient):
         :param container_name: Container to be updated
         :param image: ECR image URL
         :param entrypoint: Optional entrypoint override
+        :param task_definition_arn: The new task definition ARN
         :param command: Optional command override
         :return: The updated ECS task definition ARN
         """
@@ -299,7 +301,7 @@ class Client(BaseClient):
         )
 
         # Retrieve the existing task definition
-        task_definition = self.get_task_definition(ecs_service['taskDefinition'])
+        task_definition = self.get_task_definition(task_definition_arn)
 
         # Update the image in the task definition
         task_definition['image'] = image
