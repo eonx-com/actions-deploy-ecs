@@ -200,7 +200,7 @@ class ConfigurationFile:
         :param environment_id:
         :return: The AWS account ID
         """
-        return ConfigurationFile.__sanitize_filename__("{path_repository_root}/docker/aws/entrypoints/{container_id}.sh".format(
+        return ConfigurationFile.__sanitize_filename__("{path_repository_root}/docker/entrypoints/{container_id}.sh".format(
             path_repository_root=GitHub.get_repository_root(),
             container_id=container_id
         ))
