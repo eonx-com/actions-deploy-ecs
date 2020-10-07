@@ -28,8 +28,7 @@ class DockerCompose:
                         'context': context,
                         'dockerfile': dockerfile,
                         'args': {
-                            'DOCKER_CONTAINER_PATH': 'aws',
-                            'AWS_ENVIRONMENT_OVERRIDE': environment_id
+                            'AWS_ENVIRONMENT': environment_id
                         }
                     },
                     'image': image,
