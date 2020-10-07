@@ -8,13 +8,14 @@ from typing import Tuple
 # noinspection DuplicatedCode
 class DockerCompose:
     @staticmethod
-    def create_build_file(context: str, container_id: str, environment_id: str, dockerfile: str, image: str, version: str = '3.7') -> str:
+    def create_build_file(context: str, container_id: str, environment_id: str, dockerfile: str, image: str, version: str = '3.7', target: str = None) -> str:
         """
         Create a docker-compose YML file
         :param context: The image context
         :param container_id: The ID of the docker container (e.g. 'api')
         :param environment_id: The AWS environment ID
         :param dockerfile: The dockerfile location
+        :param target: The dockerfile target
         :param image: The ECR image URL
         :param version: The docker-compose version (defaults to 3.7)
         :return: The newly created filename
@@ -39,6 +40,9 @@ class DockerCompose:
                 }
             }
         }
+
+        if target is not None:
+            docker_compose['services'][container_id]['build']['target'] = target
 
         docker_compose_yml = str.encode(yaml.dump(docker_compose, sort_keys=False))
 

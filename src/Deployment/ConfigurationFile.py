@@ -107,6 +107,20 @@ class ConfigurationFile:
             container_filename=self.environments[environment_id]["containers"][container_id]['dockerfile']
         ))
 
+    def get_target(self, environment_id: str, container_id: str):
+        """
+        Return the docker target
+        :param environment_id: The environment ID
+        :param container_id: The container ID
+        :return: The AWS account ID
+        """
+        if environment_id not in self.environments.keys():
+            raise Exception("Unknown environment ({environment_id}) requested".format(environment_id=environment_id))
+        if container_id not in self.environments[environment_id]["containers"].keys():
+            raise Exception("Unknown container ({container_id}) requested".format(container_id=container_id))
+
+        return self.environments[environment_id]["containers"][container_id]['target']
+
     @staticmethod
     def __load_raw__(configuration_filename: str) -> dict:
         """
