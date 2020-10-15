@@ -182,7 +182,7 @@ class ConfigurationFile:
                 # Validate the expected entrypoint for the container exists
                 entrypoint_filename = ConfigurationFile.__get_entrypoint_filename__(container_id=container_id)
                 if os.path.exists(entrypoint_filename) is False:
-                    raise Exception('Failed to locate required Docker entrypoint script ({entrypoint_filename})'.format(
+                    print('WARNING: Failed to locate required Docker entrypoint script ({entrypoint_filename})'.format(
                         entrypoint_filename=entrypoint_filename
                     ))
 
