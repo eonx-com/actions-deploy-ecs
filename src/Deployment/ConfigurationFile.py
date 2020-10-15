@@ -119,6 +119,9 @@ class ConfigurationFile:
         if container_id not in self.environments[environment_id]["containers"].keys():
             raise Exception("Unknown container ({container_id}) requested".format(container_id=container_id))
 
+        if 'target' not in self.environments[environment_id]["containers"][container_id].keys():
+            return None
+
         return self.environments[environment_id]["containers"][container_id]['target']
 
     @staticmethod
