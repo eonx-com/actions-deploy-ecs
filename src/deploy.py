@@ -34,7 +34,6 @@ try:
 
     # Change into the repository root folder
     os.chdir(os.environ['GITHUB_WORKSPACE'])
-
     # Validate required environment variables are set
     if 'ENVIRONMENT' not in os.environ.keys():
         raise Exception('No deployment environment was specified, please ensure ENVIRONMENT action variable has been set')
@@ -216,6 +215,7 @@ try:
 
                 if len(task_arns) > 0:
                     print('Waiting For Task To Finish: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
+                    print(task_arns)
                     wait_result = ecs_client.wait_tasks_stopped(
                         cluster_name=ecs_cluster_name,
                         task_arns=task_arns
@@ -225,8 +225,6 @@ try:
                     print('--------------------------------------------------------------------------------------------------')
                     print('Loading Execution Logs')
                     print('--------------------------------------------------------------------------------------------------')
-                    # Give CloudWatch a few seconds to catch up
-                    time.sleep(5)
                     try:
                         found = False
                         for container in ecs_task_definitions[ecs_service_name]['containerDefinitions']:
