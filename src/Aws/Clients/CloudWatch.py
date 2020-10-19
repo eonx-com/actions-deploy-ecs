@@ -21,7 +21,7 @@ class Client(BaseClient):
         """
         events = []
 
-        task_id = task_arn.split('/')[1]
+        task_id = task_arn.split('/')[2]
 
         log_stream_name = '{log_stream_prefix}/{log_stream_prefix}/{task_id}'.format(
             log_stream_prefix=log_stream_prefix,

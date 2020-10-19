@@ -215,7 +215,6 @@ try:
 
                 if len(task_arns) > 0:
                     print('Waiting For Task To Finish: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
-                    print(task_arns)
                     wait_result = ecs_client.wait_tasks_stopped(
                         cluster_name=ecs_cluster_name,
                         task_arns=task_arns
