@@ -64,7 +64,9 @@ class Client(BaseClient):
             slash_split = str(task_definition_arn).split('/')
             colon_split = str(slash_split[1]).split(':')
             service_name = colon_split[0]
-            task_definitions[service_name] = task_definition_arn
+            # If the service isn't already found- add it. Otherwise skip it as the later definitions will be older (as they are sorted in descending order)
+            if service_name not in task_definitions.keys():
+                task_definitions[service_name] = task_definition_arn
 
         return task_definitions
 

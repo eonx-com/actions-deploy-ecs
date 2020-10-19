@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import time
 
 from Aws.Clients import Ecs, Ssm
 from Aws.Clients import CloudWatch
@@ -133,8 +134,10 @@ try:
     ecs_task_definition_rollbacks_required = []
     ssm_image_rollbacks_required = []
 
+    print('Retrieving latest task definitions for each service...')
     task_definition_arns = ecs_client.list_task_definitions_by_service_name()
-    print(task_definition_arns)
+    for ecs_service_name, task_definition_arn in task_definition_arns.items():
+        print(f'{ecs_service_name}: {task_definition_arn}')
 
     # Validate the all required ECS services were found and retrieve the deployed task definition for each service
     ecs_services = ecs_client.get_services_by_name(cluster=ecs_cluster_name)
@@ -220,8 +223,10 @@ try:
 
                     # Search for CloudWatch log output
                     print('--------------------------------------------------------------------------------------------------')
-                    print('Execution Logs')
+                    print('Loading Execution Logs')
                     print('--------------------------------------------------------------------------------------------------')
+                    # Give CloudWatch a few seconds to catch up
+                    time.sleep(5)
                     try:
                         found = False
                         for container in ecs_task_definitions[ecs_service_name]['containerDefinitions']:

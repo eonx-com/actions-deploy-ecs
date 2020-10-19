@@ -27,6 +27,7 @@ class Client(BaseClient):
             log_stream_prefix=log_stream_prefix,
             task_id=task_id
         )
+        print(f'Searching for log stream: {log_group_name}:{log_stream_name}...')
 
         # Retrieve all events from the log stream
         get_log_events_result = self.get_client().get_log_events(
