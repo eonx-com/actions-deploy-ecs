@@ -195,14 +195,22 @@ try:
                 suppress_line = False
 
                 if deployment_configuration.is_wait_service_stable_required(environment_id=environment_id, container_id=container_id):
-                    
+
                     print('Waiting for service to stabilize: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
                     ecs_client.wait_services_stable(
                         cluster_name=ecs_cluster_name,
                         services=[ecs_service_name]
                     )
                     print('Service stabilized')
+
                     # Search for CloudWatch log output
+                    running_task_arns = ecs_client.list_running_task_arns(
+                        cluster_name=ecs_cluster_name,
+                        service_name=ecs_service_name
+                    )
+                    for task_arn in running_task_arns:
+                        print(f'Running Task ARN: {task_arn}')
+
                     print('--------------------------------------------------------------------------------------------------')
                     print('Loading Execution Logs')
                     print('--------------------------------------------------------------------------------------------------')
@@ -217,7 +225,7 @@ try:
                                 events = cloud_watch_client.get_log_events(
                                     log_group_name=log_group_name,
                                     log_stream_prefix=log_stream_prefix,
-                                    task_arn=task_arns[0]
+                                    task_arn=running_task_arns[0]
                                 )
 
                                 for event in events:

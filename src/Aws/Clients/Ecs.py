@@ -51,6 +51,34 @@ class Client(BaseClient):
         )
         return describe_task_definition_result['taskDefinition']
 
+    def list_running_task_arns(self, cluster_name: str, service_name: str) -> List[str]:
+        """
+        List all running task ARNs for the given service/cluster
+        :return: List of task ARNs
+        """
+        list_task_results = self.get_client().list_tasks(
+            cluster=cluster_name,
+            desiredStatus='RUNNING',
+            serviceName=service_name
+        )
+
+        task_arns = []
+
+        while True:
+            for task_arn in list_task_results['taskArns']:
+                task_arns.append(task_arn)
+
+            if 'nextToken' not in list_task_results:
+                break
+            list_task_results = self.get_client().list_tasks(
+                cluster=cluster_name,
+                desiredStatus='RUNNING',
+                serviceName=service_name,
+                nextToken=list_task_results['next_token']
+            )
+
+        return task_arns
+
     def list_task_definitions_by_service_name(self) -> Dict[str, str]:
         """
         Return a list of task definitions indexed by the service name
