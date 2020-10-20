@@ -192,13 +192,48 @@ try:
                 print('New Task Definition ARN: {task_definition_arn}'.format(task_definition_arn=task_definition_arn))
                 ecs_task_definition_rollbacks_required.append(task_definition_arn)
 
+                suppress_line = False
+
                 if deployment_configuration.is_wait_service_stable_required(environment_id=environment_id, container_id=container_id):
+                    
                     print('Waiting for service to stabilize: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
                     ecs_client.wait_services_stable(
                         cluster_name=ecs_cluster_name,
                         services=[ecs_service_name]
                     )
                     print('Service stabilized')
+                    # Search for CloudWatch log output
+                    print('--------------------------------------------------------------------------------------------------')
+                    print('Loading Execution Logs')
+                    print('--------------------------------------------------------------------------------------------------')
+                    try:
+                        found = False
+                        for container in ecs_task_definitions[ecs_service_name]['containerDefinitions']:
+                            if container['name'] == ecs_service_name:
+                                found = True
+                                # Display the log output
+                                log_group_name = container['logConfiguration']['options']['awslogs-group']
+                                log_stream_prefix = container['logConfiguration']['options']['awslogs-stream-prefix']
+                                events = cloud_watch_client.get_log_events(
+                                    log_group_name=log_group_name,
+                                    log_stream_prefix=log_stream_prefix,
+                                    task_arn=task_arns[0]
+                                )
+
+                                for event in events:
+                                    print('{timestamp}: {message}'.format(
+                                        timestamp=datetime.fromtimestamp(event['timestamp'] / 1000),
+                                        message=event['message']
+                                    ))
+
+                        if found is False:
+                            raise Exception('Could not locate CloudWatch log configuration')
+                    except Exception as exception:
+                        print(exception)
+                        print('WARNING: Failed to locate CloudWatch logs for the task. This is most likely caused by the ECS task failing to start- please refer to ECS stopped tasks lists for more information')
+
+                    suppress_line = True
+                    print('--------------------------------------------------------------------------------------------------')
 
             # Regardless of whether the image has changed, always run the task if requested
             if deployment_configuration.is_container_run_required(environment_id=environment_id, container_id=container_id):
@@ -249,6 +284,7 @@ try:
                     except Exception as exception:
                         print(exception)
                         print('WARNING: Failed to locate CloudWatch logs for the task. This is most likely caused by the ECS task failing to start- please refer to ECS stopped tasks lists for more information')
+                    suppress_line = True
                     print('--------------------------------------------------------------------------------------------------')
 
                     # Retrieve the exit code for the container
@@ -276,7 +312,8 @@ try:
                 else:
                     raise Exception('Failed to start task')
 
-            print('--------------------------------------------------------------------------------------------------')
+            if suppress_line is False:
+                print('--------------------------------------------------------------------------------------------------')
 
         # Update the SSM parameters used by Terraform with latest deployed tags
         print('Updating Terraform SSM Image Tags')
