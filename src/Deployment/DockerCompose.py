@@ -29,6 +29,7 @@ class DockerCompose:
                         'context': context,
                         'dockerfile': dockerfile,
                         'args': {
+                            'AWS_ECS_TASK_NAME': container_id,
                             'AWS_ENVIRONMENT': environment_id
                         }
                     },
