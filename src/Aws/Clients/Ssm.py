@@ -28,7 +28,7 @@ class Client(BaseClient):
                 parameters.append(parameter['Name'])
             if 'NextToken' not in get_parameters_by_path_result.keys():
                 break
-            get_parmeters_by_path_result = self.get_client().get_parameters_by_path(
+            get_parameters_by_path_result = self.get_client().get_parameters_by_path(
                 NextToken=get_parameters_by_path_result['NextToken'],
                 Path=path,
                 Recursive=recursive
