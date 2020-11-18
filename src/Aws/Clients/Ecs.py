@@ -342,8 +342,7 @@ class Client(BaseClient):
         for container_definition in task_definition['containerDefinitions']:
             if container_definition['name'] == container_name:
                 container_definition['image'] = image
-                if 'secrets' not in container_definition.keys():
-                    container_definition['secrets'] = []
+                container_definition['secrets'] = []
                 if secrets is not None:
                     for secret in secrets:
                         secret_split = secret.split('/')
