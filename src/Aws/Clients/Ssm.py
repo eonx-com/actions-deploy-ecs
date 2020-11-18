@@ -11,6 +11,31 @@ class Client(BaseClient):
         """
         super().__init__(session=session, client='ssm')
 
+    def get_parameters_by_path(self, path: str = '/', recursive: bool = False) -> List[str]:
+        """
+        Return list of SSM parmater names in the given path
+        :param path: The path to search
+        :param recursive: Boolean flag, if true will recurse all sub-paths
+        """
+        parameters = []
+        get_parameters_by_path_result = self.get_client().get_parmeters_by_path(
+            Path=path,
+            Recursive=recursive
+        )
+
+        while True:
+            for parameter in get_parameters_by_path_result['Parameters']:
+                parameters.append(parameter['Name'])
+            if 'NextToken' not in get_parameters_by_path_result.keys():
+                break
+            get_parmeters_by_path_result = self.get_client().get_parmeters_by_path(
+                NextToken=get_parameters_by_path_result['NextToken'],
+                Path=path,
+                Recursive=recursive
+            )
+
+        return parameters
+
     def put_parameter(self, path: str, value: str, secure: bool = False, allow_overwrite: bool = True):
         """
         Set an SSM parameter
