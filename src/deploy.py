@@ -153,7 +153,7 @@ try:
 
     try:
         for container_id in deployment_containers:
-            parameters = ssm_client.get_parameters_by_path()
+            parameters = ssm_client.get_parameters_by_path(recursive=True)
             print(parameters)
             ecs_service_name = to_camel_case(container_id)
             ecs_service = ecs_services[ecs_service_name]
