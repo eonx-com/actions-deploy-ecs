@@ -56,6 +56,10 @@ try:
         aws_account_id=deployment_configuration.get_aws_account_id(environment_id),
         aws_deployment_region=deployment_configuration.get_aws_deployment_region(environment_id)
     )
+    secret_prefix='arn:aws:ssm:{aws_deployment_region}:{aws_account_id}:parameter/'.format(
+        aws_account_id=deployment_configuration.get_aws_account_id(environment_id),
+        aws_deployment_region=deployment_configuration.get_aws_deployment_region(environment_id)
+    )
 
     # If a specific deployment container was specified, make sure it exists
     if 'DEPLOY_CONTAINER' in os.environ.keys():
@@ -154,7 +158,12 @@ try:
     try:
         for container_id in deployment_containers:
             parameters = ssm_client.get_parameters_by_path(recursive=True)
-            print(parameters)
+            secrets = []
+            for parameter in parameters:
+                if '/Env/' in parameter:
+                    parameter = parameter.strip('/')
+                    secrets.append(f'{secret_prefix}{parameter}')
+
             ecs_service_name = to_camel_case(container_id)
             ecs_service = ecs_services[ecs_service_name]
 
@@ -184,6 +193,7 @@ try:
                 print('Updating: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
                 ecs_service_rollbacks_required.append(ecs_service_name)
                 task_definition_arn = ecs_client.update_service_container(
+                    secrets=secrets,
                     cluster_name=ecs_cluster_name,
                     service_name=ecs_service_name,
                     container_name=ecs_service_name,

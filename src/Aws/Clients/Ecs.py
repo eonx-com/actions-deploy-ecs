@@ -311,6 +311,7 @@ class Client(BaseClient):
             container_name: str,
             image: str,
             task_definition_arn: str,
+            secrets: Optional[List[str]] = None,
             entrypoint: Optional[Dict] = None,
             command: Optional[Dict] = None
     ) -> str:
@@ -323,6 +324,7 @@ class Client(BaseClient):
         :param entrypoint: Optional entrypoint override
         :param task_definition_arn: The new task definition ARN
         :param command: Optional command override
+        :param secrets: Optional list of secrets
         :return: The updated ECS task definition ARN
         """
         ecs_service = self.get_service_by_name(
@@ -340,6 +342,15 @@ class Client(BaseClient):
         for container_definition in task_definition['containerDefinitions']:
             if container_definition['name'] == container_name:
                 container_definition['image'] = image
+                if 'secrets' not in container_definition.keys():
+                    container_definition['secrets'] = []
+                if secrets is not None:
+                    for secret in secrets:
+                        secret_split = secret.split('/')
+                        container_definition['secrets'].append({
+                            'valueFrom': secret,
+                            'name': secret_split[len(secret_split)-1]
+                        })
                 # If an entrypoint override was specified, set it here
                 if entrypoint is not None:
                     container_definition['entryPoint'] = entrypoint
