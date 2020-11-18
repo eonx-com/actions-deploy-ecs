@@ -347,6 +347,14 @@ class Client(BaseClient):
                 if secrets is not None:
                     for secret in secrets:
                         secret_split = secret.split('/')
+                        secret_name = secret_split[len(secret_split)-1]
+                        found = False
+                        for current_secret in container_definition['secrets']:
+                            if current_secret['name'] == secret_name:
+                                found = True
+                                break
+                        if found is True:
+                            continue
                         container_definition['secrets'].append({
                             'valueFrom': secret,
                             'name': secret_split[len(secret_split)-1]
