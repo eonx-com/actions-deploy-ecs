@@ -7,16 +7,28 @@ branding:
   color: 'red'
 
 inputs:
+  ecs_cluster_name:
+    description: 'ECS cluster name'
+    required: true
+  ecs_service_name:
+    description: 'ECS service name'
+    required: true
+  ecs_task_name:
+    description: 'ECS task name'
+    required: true
   environment:
     description: 'Deployment environment (e.g. dev)'
     required: true
   image_tag:
-    description: 'ECR image tag'
+    description: 'ECR Docker image tag'
     required: true
 
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - ${{ inputs.ecs_cluster_name }}
+    - ${{ inputs.ecs_service_name }}
+    - ${{ inputs.ecs_task_name }}
     - ${{ inputs.environment }}
     - ${{ inputs.image_tag }}
