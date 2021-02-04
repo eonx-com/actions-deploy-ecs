@@ -39,7 +39,7 @@ class Client(BaseClient):
         """
         return self.__get_services__(cluster_name=cluster, index='serviceArn')
 
-    def get_task_definition(self, arn: str) -> Dict[str, str]:
+    def get_task_definition(self, arn: str) -> Dict[str, Any]:
         """
         Retrieve task definition by its ARN
         :param arn: The ARN of the task definition to retrieve

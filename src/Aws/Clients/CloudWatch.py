@@ -22,12 +22,8 @@ class Client(BaseClient):
         events = []
 
         task_id = task_arn.split('/')[2]
-
-        log_stream_name = '{log_stream_prefix}/{log_stream_prefix}/{task_id}'.format(
-            log_stream_prefix=log_stream_prefix,
-            task_id=task_id
-        )
-        print(f'Searching for log stream: {log_group_name}:{log_stream_name}...')
+        log_stream_name = f'{log_group_name}/{log_stream_prefix}/{task_id}'
+        print(f'Searching for log stream: {log_stream_name}')
 
         # Retrieve all events from the log stream
         get_log_events_result = self.get_client().get_log_events(
