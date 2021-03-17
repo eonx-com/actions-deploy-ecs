@@ -75,20 +75,13 @@ try:
     print('--------------------------------------------------------------------------------------------------')
 
     build_files = {}
-    built_images = []
     for container_id in deployment_containers:
         ecs_service_name = to_camel_case(container_id)
         image = '{repository_url}/{container_id}:{github_sha}'.format(
             repository_url=repository_url,
-            container_id=deployment_configuration.get_target(environment_id, container_id),
+            container_id=deployment_configuration.get_image(environment_id, container_id),
             github_sha=github_sha
         )
-        if image in built_images:
-            print('Skipping Duplicate Image: {ecs_service_name}'.format(
-                ecs_service_name=ecs_service_name
-            ))
-            continue
-        built_images.append(image)
         build_files[container_id] = DockerCompose.create_build_file(
             context=GitHub.get_repository_root(),
             container_id=container_id,
@@ -104,8 +97,18 @@ try:
 
     # Start building and deploying the containers
     # Build each container locally
+    built_images = []
     for container_id in deployment_containers:
         ecs_service_name = to_camel_case(container_id)
+        image = '{repository_url}/{container_id}:{github_sha}'.format(
+            repository_url=repository_url,
+            container_id=deployment_configuration.get_image(environment_id, container_id),
+            github_sha=github_sha
+        )
+        if image in built_images:
+            print(f'Skipping Duplicate Image: {image}')
+            continue
+        built_images.append(image)
         print('--------------------------------------------------------------------------------------------------')
         print('Building {ecs_service_name} Docker Container'.format(ecs_service_name=ecs_service_name))
         print('--------------------------------------------------------------------------------------------------')
@@ -118,8 +121,18 @@ try:
     print('--------------------------------------------------------------------------------------------------')
     print('Pushing Docker Containers To ECR')
     print('--------------------------------------------------------------------------------------------------')
+    pushed_images = []
     for container_id in deployment_containers:
         ecs_service_name = to_camel_case(container_id)
+        image = '{repository_url}/{container_id}:{github_sha}'.format(
+            repository_url=repository_url,
+            container_id=deployment_configuration.get_image(environment_id, container_id),
+            github_sha=github_sha
+        )
+        if image in pushed_images:
+            print(f'Skipping Duplicate Image: {image}')
+            continue
+        pushed_images.append(image)
         print('Pushing: {ecs_service_name} ({repository_url})'.format(
             ecs_service_name=ecs_service_name,
             repository_url=repository_url
@@ -189,7 +202,7 @@ try:
             # Construct new image name
             new_image = '{repository_url}/{container_id}:{github_sha}'.format(
                 repository_url=repository_url,
-                container_id=deployment_configuration.get_target(environment_id, container_id),
+                container_id=deployment_configuration.get_image(environment_id, container_id),
                 github_sha=github_sha
             )
             print('New container image: {new_image}'.format(new_image=new_image))
