@@ -56,6 +56,8 @@ class DockerCompose:
         file.write(docker_compose_yml.decode('utf-8'))
         file.close()
 
+        print(docker_compose_yml)
+
         # Return the filename and file contents
         return filename
 
