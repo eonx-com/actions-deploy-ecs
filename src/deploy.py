@@ -56,7 +56,7 @@ try:
         aws_account_id=deployment_configuration.get_aws_account_id(environment_id),
         aws_deployment_region=deployment_configuration.get_aws_deployment_region(environment_id)
     )
-    secret_prefix='arn:aws:ssm:{aws_deployment_region}:{aws_account_id}:parameter/'.format(
+    secret_prefix = 'arn:aws:ssm:{aws_deployment_region}:{aws_account_id}:parameter/'.format(
         aws_account_id=deployment_configuration.get_aws_account_id(environment_id),
         aws_deployment_region=deployment_configuration.get_aws_deployment_region(environment_id)
     )
@@ -177,6 +177,7 @@ try:
         ecs_task_definitions[ecs_service_name] = ecs_client.get_task_definition(task_definition_arns[ecs_service_name])
 
     try:
+        waiting = []
         for container_id in deployment_containers:
             parameters = ssm_client.get_parameters_by_path(recursive=True)
             secrets = []
@@ -227,9 +228,14 @@ try:
 
                 suppress_line = False
 
+            if deployment_configuration.is_wait_service_stable_required(environment_id=environment_id, container_id=container_id):
+                waiting.append({
+                    'ecs_service_name': ecs_service_name,
+                    'ecs_cluster_name': ecs_cluster_name
+                })
+
             # Regardless of whether the image has changed, always run the task if requested
             if deployment_configuration.is_container_run_required(environment_id=environment_id, container_id=container_id):
-
                 print('Executing: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
                 task_arns = ecs_client.run_task_from_service(
                     cluster_name=ecs_cluster_name,
@@ -306,65 +312,55 @@ try:
 
             print('--------------------------------------------------------------------------------------------------')
 
-            for container_id in deployment_containers:
-                parameters = ssm_client.get_parameters_by_path(recursive=True)
-                secrets = []
-                for parameter in parameters:
-                    if '/Env/' in parameter:
-                        parameter = parameter.strip('/')
-                        secrets.append(f'{secret_prefix}{parameter}')
+            for task in waiting:
+                ecs_service_name = task['ecs_service_name']
+                ecs_cluster_name = task['ecs_cluster_name']
+                print('Waiting for service to stabilize: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
+                ecs_client.wait_services_stable(
+                    cluster_name=ecs_cluster_name,
+                    services=[ecs_service_name]
+                )
+                print('Service stabilized')
 
-                ecs_service_name = to_camel_case(container_id)
-                ecs_service = ecs_services[ecs_service_name]
+                # Search for CloudWatch log output
+                running_task_arns = ecs_client.list_running_task_arns(
+                    cluster_name=ecs_cluster_name,
+                    service_name=ecs_service_name
+                )
+                for task_arn in running_task_arns:
+                    print(f'Running Task ARN: {task_arn}')
 
-                if deployment_configuration.is_wait_service_stable_required(environment_id=environment_id, container_id=container_id):
+                print('--------------------------------------------------------------------------------------------------')
+                print('Loading Execution Logs')
+                print('--------------------------------------------------------------------------------------------------')
+                try:
+                    found = False
+                    for container in ecs_task_definitions[ecs_service_name]['containerDefinitions']:
+                        if container['name'] == ecs_service_name:
+                            found = True
+                            # Display the log output
+                            log_group_name = container['logConfiguration']['options']['awslogs-group']
+                            log_stream_prefix = container['logConfiguration']['options']['awslogs-stream-prefix']
+                            events = cloud_watch_client.get_log_events(
+                                log_group_name=log_group_name,
+                                log_stream_prefix=log_stream_prefix,
+                                task_arn=running_task_arns[0]
+                            )
 
-                    print('Waiting for service to stabilize: {ecs_service_name}'.format(ecs_service_name=ecs_service_name))
-                    ecs_client.wait_services_stable(
-                        cluster_name=ecs_cluster_name,
-                        services=[ecs_service_name]
-                    )
-                    print('Service stabilized')
+                            for event in events:
+                                print('{timestamp}: {message}'.format(
+                                    timestamp=datetime.fromtimestamp(event['timestamp'] / 1000),
+                                    message=event['message']
+                                ))
 
-                    # Search for CloudWatch log output
-                    running_task_arns = ecs_client.list_running_task_arns(
-                        cluster_name=ecs_cluster_name,
-                        service_name=ecs_service_name
-                    )
-                    for task_arn in running_task_arns:
-                        print(f'Running Task ARN: {task_arn}')
+                    if found is False:
+                        raise Exception('Could not locate CloudWatch log configuration')
+                except Exception as exception:
+                    print(exception)
+                    print('WARNING: Failed to locate CloudWatch logs for the task. This is most likely caused by the ECS task failing to start- please refer to ECS stopped tasks lists for more information')
 
-                    print('--------------------------------------------------------------------------------------------------')
-                    print('Loading Execution Logs')
-                    print('--------------------------------------------------------------------------------------------------')
-                    try:
-                        found = False
-                        for container in ecs_task_definitions[ecs_service_name]['containerDefinitions']:
-                            if container['name'] == ecs_service_name:
-                                found = True
-                                # Display the log output
-                                log_group_name = container['logConfiguration']['options']['awslogs-group']
-                                log_stream_prefix = container['logConfiguration']['options']['awslogs-stream-prefix']
-                                events = cloud_watch_client.get_log_events(
-                                    log_group_name=log_group_name,
-                                    log_stream_prefix=log_stream_prefix,
-                                    task_arn=running_task_arns[0]
-                                )
-
-                                for event in events:
-                                    print('{timestamp}: {message}'.format(
-                                        timestamp=datetime.fromtimestamp(event['timestamp'] / 1000),
-                                        message=event['message']
-                                    ))
-
-                        if found is False:
-                            raise Exception('Could not locate CloudWatch log configuration')
-                    except Exception as exception:
-                        print(exception)
-                        print('WARNING: Failed to locate CloudWatch logs for the task. This is most likely caused by the ECS task failing to start- please refer to ECS stopped tasks lists for more information')
-
-                    suppress_line = True
-                    print('--------------------------------------------------------------------------------------------------')
+                suppress_line = True
+                print('--------------------------------------------------------------------------------------------------')
 
         # Update the SSM parameters used by Terraform with latest deployed tags
         print('Updating Terraform SSM Image Tags')
