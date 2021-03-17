@@ -132,6 +132,10 @@ try:
         print()
         print(stdout)
         print()
+        stdout, stderr = DockerCompose.build(cache_files[container_id])
+        print()
+        print(stdout)
+        print()
 
     # Push each container to ECR repository
     print('--------------------------------------------------------------------------------------------------')
