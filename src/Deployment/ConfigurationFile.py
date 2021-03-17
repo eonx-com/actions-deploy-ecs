@@ -124,6 +124,23 @@ class ConfigurationFile:
 
         return self.environments[environment_id]["containers"][container_id]['target']
 
+    def get_image(self, environment_id: str, container_id: str):
+        """
+        Return the docker image
+        :param environment_id: The environment ID
+        :param container_id: The container ID
+        :return: The AWS account ID
+        """
+        if environment_id not in self.environments.keys():
+            raise Exception("Unknown environment ({environment_id}) requested".format(environment_id=environment_id))
+        if container_id not in self.environments[environment_id]["containers"].keys():
+            raise Exception("Unknown container ({container_id}) requested".format(container_id=container_id))
+
+        if 'image' not in self.environments[environment_id]["containers"][container_id].keys():
+            return None
+
+        return self.environments[environment_id]["containers"][container_id]['image']
+
     @staticmethod
     def __load_raw__(configuration_filename: str) -> dict:
         """

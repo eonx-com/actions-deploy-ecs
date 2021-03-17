@@ -75,64 +75,41 @@ try:
     print('--------------------------------------------------------------------------------------------------')
 
     build_files = {}
-    cache_files = {}
+    built_images = []
     for container_id in deployment_containers:
         ecs_service_name = to_camel_case(container_id)
+        image = '{repository_url}/{container_id}:{github_sha}'.format(
+            repository_url=repository_url,
+            container_id=deployment_configuration.get_target(environment_id, container_id),
+            github_sha=github_sha
+        )
+        if image in built_images:
+            print('Skipping Duplicate Image: {ecs_service_name}'.format(
+                ecs_service_name=ecs_service_name
+            ))
+            continue
+        built_images.append(image)
         build_files[container_id] = DockerCompose.create_build_file(
             context=GitHub.get_repository_root(),
             container_id=container_id,
             environment_id=environment_id,
             target=deployment_configuration.get_target(environment_id, container_id),
             dockerfile=deployment_configuration.get_container_filename(environment_id, container_id),
-            image='{repository_url}/{container_id}:{github_sha}'.format(
-                repository_url=repository_url,
-                container_id=container_id,
-                github_sha=github_sha
-            )
+            image=image
         )
         print('Created: {ecs_service_name} ({filename})'.format(
             ecs_service_name=ecs_service_name,
             filename=build_files[container_id]
         ))
 
-        cache_files[container_id] = DockerCompose.create_build_file(
-            context=GitHub.get_repository_root(),
-            container_id=container_id,
-            environment_id=environment_id,
-            target=deployment_configuration.get_target(environment_id, container_id),
-            dockerfile=deployment_configuration.get_container_filename(environment_id, container_id),
-            image='{repository_url}/{container_id}:{github_sha}'.format(
-                repository_url=repository_url,
-                container_id="cache",
-                github_sha=container_id
-            )
-        )
-
     # Start building and deploying the containers
     # Build each container locally
     for container_id in deployment_containers:
-        print('--------------------------------------------------------------------------------------------------')
-        print('Pulling Cached Image')
-        print('--------------------------------------------------------------------------------------------------')
-        Docker.login(
-            repository_url=repository_url,
-            username='AWS',
-            password=AwsCli.ecr_get_login_password(deployment_configuration.get_aws_deployment_region(environment_id))
-        )
-        try:
-            DockerCompose.pull(cache_files[container_id])
-        except Exception:
-            print('Failed to pull existing image from cache repository')
-            pass
         ecs_service_name = to_camel_case(container_id)
         print('--------------------------------------------------------------------------------------------------')
         print('Building {ecs_service_name} Docker Container'.format(ecs_service_name=ecs_service_name))
         print('--------------------------------------------------------------------------------------------------')
         stdout, stderr = DockerCompose.build(build_files[container_id])
-        print()
-        print(stdout)
-        print()
-        stdout, stderr = DockerCompose.build(cache_files[container_id])
         print()
         print(stdout)
         print()
@@ -153,7 +130,6 @@ try:
             password=AwsCli.ecr_get_login_password(deployment_configuration.get_aws_deployment_region(environment_id))
         )
         DockerCompose.push(build_files[container_id])
-        DockerCompose.push(cache_files[container_id])
 
     # Update ECS services
     print('--------------------------------------------------------------------------------------------------')
@@ -213,7 +189,7 @@ try:
             # Construct new image name
             new_image = '{repository_url}/{container_id}:{github_sha}'.format(
                 repository_url=repository_url,
-                container_id=container_id.replace("_", "-"),
+                container_id=deployment_configuration.get_target(environment_id, container_id),
                 github_sha=github_sha
             )
             print('New container image: {new_image}'.format(new_image=new_image))
