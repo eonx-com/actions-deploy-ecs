@@ -73,7 +73,7 @@ class DockerCompose:
         stdout_build, stderr_build = process.communicate()
         if process.returncode != 0:
             print(stderr_build.decode('utf-8').strip())
-            raise Exception('Unexpected return code ({return_code}) received during container build process'.format(
+            raise Exception('Unexpected return code ({return_code}) received during build process'.format(
                 return_code=process.returncode
             ))
         return stdout_build.decode('utf-8').strip(), stderr_build.decode('utf-8').strip()
@@ -90,7 +90,24 @@ class DockerCompose:
         stdout_push, stderr_push = process.communicate()
         if process.returncode != 0:
             print(stderr_push.decode('utf-8').strip())
-            raise Exception('Unexpected return code ({return_code}) received during container build process'.format(
+            raise Exception('Unexpected return code ({return_code}) received during push request'.format(
+                return_code=process.returncode
+            ))
+        return stdout_push.decode('utf-8').strip(), stderr_push.decode('utf-8').strip()
+
+    @staticmethod
+    def pull(filename: str) -> Tuple[str, str]:
+        """
+        Pull docker-compose container
+        :param filename: The full path/filename of the docker-compose.yml file
+        :returns: Tuple containing the stdout and stderr stream contents
+        :raises: Exception on error
+        """
+        process = Popen(['docker-compose', '-f', filename, 'pull'], stdout=PIPE, stderr=PIPE)
+        stdout_push, stderr_push = process.communicate()
+        if process.returncode != 0:
+            print(stderr_push.decode('utf-8').strip())
+            raise Exception('Unexpected return code ({return_code}) received during pull request'.format(
                 return_code=process.returncode
             ))
         return stdout_push.decode('utf-8').strip(), stderr_push.decode('utf-8').strip()
