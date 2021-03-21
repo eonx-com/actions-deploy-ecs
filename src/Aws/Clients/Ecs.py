@@ -367,9 +367,12 @@ class Client(BaseClient):
                     container_definition['command'] = command
 
         # Register a new task definition
+        task_role_arn = None
+        if 'taskRoleArn' in task_definition.keys():
+            task_role_arn = task_definition['taskRoleArn']
         register_task_definition_result = self.get_client().register_task_definition(
             family=task_definition['family'],
-            taskRoleArn=task_definition['taskRoleArn'],
+            taskRoleArn=task_role_arn,
             executionRoleArn=task_definition['executionRoleArn'],
             networkMode=task_definition['networkMode'],
             containerDefinitions=task_definition['containerDefinitions'],
