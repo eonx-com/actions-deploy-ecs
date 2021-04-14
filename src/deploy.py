@@ -29,41 +29,56 @@ try:
     print()
 
     # Validate GitHub workspace was configured
+    print('Checking workspace')
     if 'GITHUB_WORKSPACE' not in os.environ.keys():
         raise Exception('No GITHUB_WORKSPACE was specified, please ensure GITHUB_WORKSPACE environment variable has been set')
 
     # Change into the repository root folder
     os.chdir(os.environ['GITHUB_WORKSPACE'])
+
     # Validate required environment variables are set
+    print('Checking environment')
     if 'ENVIRONMENT' not in os.environ.keys():
         raise Exception('No deployment environment was specified, please ensure ENVIRONMENT action variable has been set')
 
     # Validate the GitHub SHA was supplied
+    print('Checking image tag')
     if 'IMAGE_TAG' not in os.environ.keys():
         raise Exception('No ECR image tag was specified, please ensure IMAGE_TAG action variable has been set')
 
     # Load deployment configuration
+    path_repository_root = GitHub.get_repository_root()
+    print('GitHub repository root: {path_repository_root}')
     deployment_configuration_filename = '{path_repository_root}/.github/deploy.yml'.format(
-        path_repository_root=GitHub.get_repository_root()
+        path_repository_root=path_repository_root
     )
 
+    print('Creating deployment configuration file')
     deployment_configuration = ConfigurationFile(deployment_configuration_filename)
     environment_id = os.environ['ENVIRONMENT']
+    print(f'Environment: {environment_id}')
     github_sha = os.environ['IMAGE_TAG']
+    print(f'GitHub SHA: {github_sha}')
     aws_account_id = deployment_configuration.get_aws_account_id(environment_id)
+    print(f'AWS Account ID: {aws_account_id}')
     deployment_containers = deployment_configuration.get_container_names(environment_id)
+    print(f'Deployment Containers: {deployment_containers}')
     repository_url = '{aws_account_id}.dkr.ecr.{aws_deployment_region}.amazonaws.com'.format(
         aws_account_id=deployment_configuration.get_aws_account_id(environment_id),
         aws_deployment_region=deployment_configuration.get_aws_deployment_region(environment_id)
     )
-    secret_prefix = 'arn:aws:ssm:{aws_deployment_region}:{aws_account_id}:parameter/'.format(
+    print(f'Repository URL: {repository_url}')
+    secret_prefix='arn:aws:ssm:{aws_deployment_region}:{aws_account_id}:parameter/'.format(
         aws_account_id=deployment_configuration.get_aws_account_id(environment_id),
         aws_deployment_region=deployment_configuration.get_aws_deployment_region(environment_id)
     )
+    print(f'Secret Prefix: {secret_prefix}')
 
     # If a specific deployment container was specified, make sure it exists
+    print('Checking deploy container')
     if 'DEPLOY_CONTAINER' in os.environ.keys():
         selected_container = os.environ['DEPLOY_CONTAINER']
+        print(f'Checking: {selected_container}')
         if selected_container not in deployment_containers:
             raise Exception('The requested container ({selected_container}) did not exist in the environment'.format(selected_container=selected_container))
         # Just truncate to the single container
@@ -77,6 +92,7 @@ try:
     build_files = {}
     for container_id in deployment_containers:
         ecs_service_name = to_camel_case(container_id)
+        print(f'Creating Build File: {ecs_service_name}')
         image = '{repository_url}/{container_id}:{github_sha}'.format(
             repository_url=repository_url,
             container_id=deployment_configuration.get_image(environment_id, container_id),
