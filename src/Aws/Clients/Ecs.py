@@ -170,7 +170,7 @@ class Client(BaseClient):
         )
         return describe_tasks_result['tasks'][0]
 
-    def wait_tasks_running(self, cluster_name: str, task_arns: List[str], delay=20, max_attempts=9) -> Any:
+    def wait_tasks_running(self, cluster_name: str, task_arns: List[str], delay=10, max_attempts=100) -> Any:
         """
         Wait for the listed tasks to start running
         :param cluster_name: The ECS cluster name
@@ -189,7 +189,7 @@ class Client(BaseClient):
             }
         )
 
-    def wait_tasks_stopped(self, cluster_name: str, task_arns: List[str], delay=20, max_attempts=9) -> Any:
+    def wait_tasks_stopped(self, cluster_name: str, task_arns: List[str], delay=10, max_attempts=100) -> Any:
         """
         Wait for the listed tasks to stop running
         :param cluster_name: The ECS cluster name
@@ -208,7 +208,7 @@ class Client(BaseClient):
             }
         )
 
-    def wait_services_stable(self, cluster_name: str, services: List[str], delay=20, max_attempts=18) -> Any:
+    def wait_services_stable(self, cluster_name: str, services: List[str], delay=10, max_attempts=100) -> Any:
         """
         Wait for the listed services to stabilize
         :param cluster_name: The ECS cluster name
@@ -227,7 +227,7 @@ class Client(BaseClient):
             }
         )
 
-    def wait_services_inactive(self, cluster_name: str, services: List[str], delay=20, max_attempts=9) -> None:
+    def wait_services_inactive(self, cluster_name: str, services: List[str], delay=10, max_attempts=100) -> None:
         """
         Wait for the listed services to be inactive
         :param cluster_name: The ECS cluster name
