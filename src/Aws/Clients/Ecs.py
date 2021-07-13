@@ -362,6 +362,10 @@ class Client(BaseClient):
                     'name': 'DD_VERSION'
                 })
                 container_definition['environment'].append({
+                    'value': 'true',
+                    'name': 'DD_PROCESS_AGENT_ENABLED'
+                })
+                container_definition['environment'].append({
                     'value': container_name,
                     'name': 'DD_SERVICE'
                 })
