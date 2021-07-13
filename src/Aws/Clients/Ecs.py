@@ -343,6 +343,24 @@ class Client(BaseClient):
         for container_definition in task_definition['containerDefinitions']:
             if container_definition['name'] == container_name:
                 container_definition['image'] = image
+                if 'environment' not in container_definition.keys():
+                    container_definition['environment'] = []
+                container_definition['environment'].append({
+                    'value': os.environ.get('GITHUB_SHA', 'Unknown'),
+                    'name': 'GITHUB_SHA'
+                })
+                container_definition['environment'].append({
+                    'value': os.environ.get('GITHUB_REF', 'Unknown'),
+                    'name': 'GITHUB_REF'
+                })
+                container_definition['environment'].append({
+                    'value': os.environ.get('GITHUB_REPOSITORY', 'Unknown'),
+                    'name': 'GITHUB_REPOSITORY'
+                })
+                container_definition['environment'].append({
+                    'value': os.environ.get('GITHUB_ACTOR', 'Unknown'),
+                    'name': 'GITHUB_ACTOR'
+                })
                 if 'secrets' not in container_definition.keys():
                     container_definition['secrets'] = []
                 if secrets is not None:
@@ -360,22 +378,6 @@ class Client(BaseClient):
                             'valueFrom': secret,
                             'name': secret_split[len(secret_split)-1]
                         })
-                container_definition['secrets'].append({
-                    'value': os.environ.get('GITHUB_SHA', 'Unknown'),
-                    'name': 'GITHUB_SHA'
-                })
-                container_definition['secrets'].append({
-                    'value': os.environ.get('GITHUB_REF', 'Unknown'),
-                    'name': 'GITHUB_REF'
-                })
-                container_definition['secrets'].append({
-                    'value': os.environ.get('GITHUB_REPOSITORY', 'Unknown'),
-                    'name': 'GITHUB_REPOSITORY'
-                })
-                container_definition['secrets'].append({
-                    'value': os.environ.get('GITHUB_ACTOR', 'Unknown'),
-                    'name': 'GITHUB_ACTOR'
-                })
                 # If an entrypoint override was specified, set it here
                 if entrypoint is not None:
                     container_definition['entryPoint'] = entrypoint
