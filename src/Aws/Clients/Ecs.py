@@ -358,7 +358,7 @@ class Client(BaseClient):
                     'name': 'DD_ENV'
                 })
                 container_definition['environment'].append({
-                    'value': os.environ.get('GITHUB_REF', 'Unknown'),
+                    'value': os.environ.get('GITHUB_SHA', 'Unknown'),
                     'name': 'DD_VERSION'
                 })
                 container_definition['environment'].append({
