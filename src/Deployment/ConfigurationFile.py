@@ -137,7 +137,7 @@ class ConfigurationFile:
             raise Exception("Unknown container ({container_id}) requested".format(container_id=container_id))
 
         if 'image' not in self.environments[environment_id]["containers"][container_id].keys():
-            return None
+            raise Exception(f'The ".github/deploy.yml" file for this project did not specify an image tag for the "{container_id}" container')
 
         return self.environments[environment_id]["containers"][container_id]['image']
 
