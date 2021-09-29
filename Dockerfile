@@ -12,7 +12,7 @@ RUN apt update; \
     ./aws/install; \
     rm ./aws/install; \
     rm -rf /var/lib/apt/lists/*;
-RUN wget -s https://github.com/docker/compose/releases/download/1.29.1/docker-compose-Linux-x86_64; \
+RUN wget https://github.com/docker/compose/releases/download/1.29.1/docker-compose-Linux-x86_64; \
     chmod +x docker-compose-Linux-x86_64; \
     mv docker-compose-Linux-x86_64 /usr/local/bin/docker-compose;
 
