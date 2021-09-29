@@ -67,7 +67,7 @@ class DockerCompose:
         :returns: Tuple containing the stdout and stderr stream contents
         :raises: Exception on error
         """
-        process = Popen(['docker-compose', '--config', filename, 'build'], stdout=PIPE, stderr=PIPE)
+        process = Popen(['docker-compose', '-f', filename, 'build'], stdout=PIPE, stderr=PIPE)
         stdout_build, stderr_build = process.communicate()
         if process.returncode != 0:
             print(stderr_build.decode('utf-8').strip())
@@ -84,7 +84,7 @@ class DockerCompose:
         :returns: Tuple containing the stdout and stderr stream contents
         :raises: Exception on error
         """
-        process = Popen(['docker-compose', '--config', filename, 'push'], stdout=PIPE, stderr=PIPE)
+        process = Popen(['docker-compose', '-f', filename, 'push'], stdout=PIPE, stderr=PIPE)
         stdout_push, stderr_push = process.communicate()
         if process.returncode != 0:
             print(stderr_push.decode('utf-8').strip())
@@ -101,7 +101,7 @@ class DockerCompose:
         :returns: Tuple containing the stdout and stderr stream contents
         :raises: Exception on error
         """
-        process = Popen(['docker-compose', '--config', filename, 'pull'], stdout=PIPE, stderr=PIPE)
+        process = Popen(['docker-compose', '-f', filename, 'pull'], stdout=PIPE, stderr=PIPE)
         stdout_push, stderr_push = process.communicate()
         if process.returncode != 0:
             print(stderr_push.decode('utf-8').strip())
