@@ -12,13 +12,9 @@ RUN apt update; \
     ./aws/install; \
     rm ./aws/install; \
     rm -rf /var/lib/apt/lists/*;
-RUN curl -s https://api.github.com/repos/docker/compose/releases/latest \
-      | grep browser_download_url \
-      | grep docker-compose-linux-amd64 \
-      | cut -d '"' -f 4 \
-      | wget -qi -; \
-    chmod +x docker-compose-linux-amd64; \
-    mv docker-compose-linux-amd64 /usr/local/bin/docker-compose;
+RUN wget https://github.com/docker/compose/releases/download/1.29.1/docker-compose-Linux-x86_64; \
+    chmod +x docker-compose-Linux-x86_64; \
+    mv docker-compose-Linux-x86_64 /usr/local/bin/docker-compose;
 
 
 COPY ./entrypoint.sh /opt/deploy/entrypoint.sh
