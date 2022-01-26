@@ -379,26 +379,26 @@ try:
                 print('--------------------------------------------------------------------------------------------------')
 
         # Update the SSM parameters used by Terraform with latest deployed tags
-        print('Updating Terraform SSM Image Tags')
-        print('--------------------------------------------------------------------------------------------------')
-        for container_id in deployment_containers:
-            ecs_service_name = to_camel_case(container_id)
-            path = '/Terraform/ECS/Tag/{ecs_service_name}'.format(ecs_service_name=ecs_service_name)
-            original_value = ssm_client.get_parameter(path=path)
-            print('Updating SSM Image Tag: {path} ({github_sha})'.format(
-                path=path,
-                github_sha=github_sha
-            ))
-            ssm_image_rollbacks_required.append({
-                "path": path,
-                "value": original_value
-            })
-            ssm_client.put_parameter(
-                path=path,
-                value=github_sha,
-                secure=False,
-                allow_overwrite=True
-            )
+        #         print('Updating Terraform SSM Image Tags')
+        #         print('--------------------------------------------------------------------------------------------------')
+        #         for container_id in deployment_containers:
+        #             ecs_service_name = to_camel_case(container_id)
+        #             path = '/Terraform/ECS/Tag/{ecs_service_name}'.format(ecs_service_name=ecs_service_name)
+        #             original_value = ssm_client.get_parameter(path=path)
+        #             print('Updating SSM Image Tag: {path} ({github_sha})'.format(
+        #                 path=path,
+        #                 github_sha=github_sha
+        #             ))
+        #             ssm_image_rollbacks_required.append({
+        #                 "path": path,
+        #                 "value": original_value
+        #             })
+        #             ssm_client.put_parameter(
+        #                 path=path,
+        #                 value=github_sha,
+        #                 secure=False,
+        #                 allow_overwrite=True
+        #             )
 
     except Exception as exception:
         # If there were an services that successfully updated, or where updated were attempted- roll them back
@@ -444,18 +444,18 @@ try:
                 print('Deregistering: {task_definition_arn}'.format(task_definition_arn=task_definition_arn))
                 ecs_client.deregister_task_definition(task_definition_arn=task_definition_arn)
 
-        if len(ssm_image_rollbacks_required) > 0:
-            print('--------------------------------------------------------------------------------------------------')
-            print('Rolling Back Terraform SSM Image Tags')
-            print('--------------------------------------------------------------------------------------------------')
-            for ssm_image in ssm_image_rollbacks_required:
-                print('Reverting: {path}'.format(path=ssm_image['path']))
-                ssm_client.put_parameter(
-                    path=ssm_image["path"],
-                    value=ssm_image["value"],
-                    secure=False,
-                    allow_overwrite=True
-                )
+            #         if len(ssm_image_rollbacks_required) > 0:
+            #             print('--------------------------------------------------------------------------------------------------')
+            #             print('Rolling Back Terraform SSM Image Tags')
+            #             print('--------------------------------------------------------------------------------------------------')
+            #             for ssm_image in ssm_image_rollbacks_required:
+            #                 print('Reverting: {path}'.format(path=ssm_image['path']))
+            #                 ssm_client.put_parameter(
+            #                     path=ssm_image["path"],
+            #                     value=ssm_image["value"],
+            #                     secure=False,
+            #                     allow_overwrite=True
+            #                 )
 
         raise Exception(exception)
 
